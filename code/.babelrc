@@ -1,0 +1,16 @@
+{
+  "presets": [
+    ["env", {
+      "targets": {
+        "browsers": ["last 2 versions", "safari >= 7"]
+      },
+        "modules": 'commonjs'
+    }]
+  ],
+  "plugins": [
+    "transform-runtime",
+    ["transform-react-jsx", {
+      "pragma": "h" // default pragma is React.createElement
+    }]
+  ]
+}
