@@ -49,7 +49,7 @@ const plugins = [
 module.exports = (env = {}) => ({
   entry: {
     vendor: ['hyperapp'],
-    margaret: './src/scripts/App.js',
+    margaret: './src/view/scripts/App.js',
   },
   output: {
     path: path.resolve(DIST_DIR),

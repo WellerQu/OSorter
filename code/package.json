@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack-dev-server --mode development --progress --hot --hotOnly --config ./build/webpack.config.js",
         "build": "webpack --mode production --progress --config ./build/webpack.config.js --env.prod",
-        "elec": "electron dist/main.js"
+        "elec": "cp main.js dist/main.js && electron dist/main.js"
     },
     "keywords": [
         "osorter",
