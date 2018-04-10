@@ -15,13 +15,15 @@ export default ({ stars, tags, actress, comment }) => (
     </div>
     <div class={ locals.form }>
       <div class={ locals.actress }>
-        <label for=""></label>
+        <label for="">主演</label>
         <input type="text" />
       </div>
       <div class={ locals.comment }>
+        <label for="">评价</label>
+        <textarea rows="10"></textarea>
       </div>
       <div>
-        <button></button>
+        <button>保存</button>
       </div>
     </div>
   </div>
