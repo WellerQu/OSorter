@@ -22,6 +22,9 @@ const state = {
     children: [{
       name: 'MIDE-175',
       icon: 'subdir'
+    }, {
+      name: 'MIDE-175',
+      icon: 'subdir'
     }],
     isExpand: true,
     icon: 'root'

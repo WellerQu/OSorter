@@ -20,7 +20,7 @@ export default ({ stars, tags, actress, comment }) => (
       </div>
       <div class={ locals.comment }>
         <label for="">评价</label>
-        <textarea rows="10"></textarea>
+        <textarea rows="6"></textarea>
       </div>
       <div>
         <button>保存</button>
