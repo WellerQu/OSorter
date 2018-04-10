@@ -1,18 +1,57 @@
 html, body
-  font-size: 14px
-  /* retina屏幕抗锯齿 */
-  -webkit-font-smoothing: subpixel-antialiased
-  /* 使用 
-      -apple-system: Apple系统字体;
-      BlinkMacSystemFont: Chrome 默认字体;
-      tahoma 作为首选的西文字体，小字号下结构清晰端整、阅读辨识容易；
-      用户电脑未预装 tohoma，则选择 arial 作为替代的西文字体，覆盖 windows 和 MAC OS；
-      Hiragino Sans GB 为冬青黑体，首选的中文字体，保证了 MAC 用户的观看体验；
-      Windows 下没有预装冬青黑体，则使用 '\5b8b\4f53' 宋体为替代的中文字体方案，小字号下有着不错的效果；
-      最后使用无衬线系列字体 sans-serif 结尾，保证旧版本操作系统用户能选中一款电脑预装的无衬线字体，向下兼容。 */
-  font-family: -apple-system, BlinkMacSystemFont, tahoma, arial, 'Hiragino Sans GB', '\5b8b\4f53', sans-serif
-  /* 默认配置 */
+  margin: 0
+  padding: 0
   line-height: 1
+  font-size: 0.14rem
+  font-family: 'Avenir', Helvetica, Arial, sans-serif
+  /* retina屏幕抗锯齿 */
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+  /* 用户不能选中文本 */
+  user-select: none
+  /* 字体大小限制 */
+  text-size-adjust: 100%
+  /* 点击无响应背景 */
+  -webkit-tap-highlight-color: rgba(0,0,0,0)
+  tap-highlight-color: rgba(0,0,0,0)
+  /* 增加该属性，可以增加弹性 */
+  -webkit-overflow-scrolling: touch
+  overflow-scrolling: touch
+  height: 100vh
+
+a
+  text-decoration: none
+
+ul, li
+  padding: 0
+  margin: 0
+  list-style: none
 
 .app
-  background: #CCC
+  background: #4A4A4A
+  height: 100%
+  display: flex
+  flex-flow: column nowrap
+
+.main
+  flex: auto
+  display: flex
+
+.root
+  flex: 0 0 40px
+  padding: 8px 20px
+  box-sizing: border-box
+  > span
+    margin: 0 0 0 10px
+    color: #9B9B9B
+    font-size: 18px
+    vertical-align: middle
+
+.tree
+  flex: 0 0 300px
+  
+.file
+  flex: auto
+
+.detail
+  flex: 0 0 400px

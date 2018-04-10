@@ -1,0 +1,30 @@
+.tags
+  height: 100%
+  overflow: auto
+
+.tag
+  $bgColor: #4A4A4A
+  display: inline-block
+  min-height: 40px
+  min-width: 80px
+  box-sizing: border-box
+  padding: 10px 20px
+  color: #E7E7E7
+  font-size: 18px
+  border-radius: 5px
+  background: $bgColor
+  vertical-align: middle
+  margin: 0 0 10px 0
+  text-align: center
+  cursor: pointer
+
+  + .tag
+    margin-left: 10px
+
+  &:last-child
+    &:hover
+      background: lighten($bgColor, 10%)
+    &:active
+      background: darken($bgColor, 10%)
+      border: solid 1px #F5A623
+      box-shadow: 0 0 8px #F5A623
