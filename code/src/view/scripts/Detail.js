@@ -1,17 +1,35 @@
 import { h } from 'hyperapp'
 
+import ICON from './ICON'
 import Tags from './Tags'
 import Stars from './Stars'
 
 import locals from '../styles/Detail.sass'
 
+const onSaveButtonClick = saveDescHandler => event => {
+  const actress = document
+    .querySelector('.' + locals.actress)
+    .querySelector('input').value
+  const comment = document
+    .querySelector('.' + locals.comment)
+    .querySelector('textarea').value
+
+  saveDescHandler(actress, comment)
+}
+
 export default ({
   name = '未命名文件',
   stars,
   tags,
+  allTags,
   actress,
   comment,
-  ratingHandler
+  ratingHandler,
+  isAddingTag,
+  addTagHandler,
+  selectTagHandler,
+  saveTagHandler,
+  saveDescHandler
 }) => (
   <div class={locals.detail}>
     <div class={locals.name}>{name}</div>
@@ -19,7 +37,14 @@ export default ({
       <Stars stars={stars} ratingHandler={ratingHandler} />
     </div>
     <div class={locals.tags}>
-      <Tags tags={tags} />
+      <Tags
+        tags={tags}
+        allTags={allTags}
+        isAddingTag={isAddingTag}
+        addTagHandler={addTagHandler}
+        selectTagHandler={selectTagHandler}
+        saveTagHandler={saveTagHandler}
+      />
     </div>
     <div class={locals.form}>
       <div class={locals.actress}>
@@ -31,7 +56,9 @@ export default ({
         <textarea rows="6">{comment}</textarea>
       </div>
       <div>
-        <button>保存</button>
+        <button onclick={onSaveButtonClick(saveDescHandler)}>
+          <ICON iconName="pencil" size={{ width: '16px', height: '16px' }} />保存
+        </button>
       </div>
     </div>
   </div>

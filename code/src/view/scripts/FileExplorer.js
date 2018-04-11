@@ -35,10 +35,10 @@ const map = ({ name = '文件名', type = FILE_TYPE.FILE, mediaPath = 'file:///U
   </div>
 )
 
-export default ({ files = [{}, {}, {}, {}], tags = [] }) => (
+export default ({ files = [{}, {}, {}, {}], allTags = [] }) => (
   <div class={ locals.explorer }>
     <div class={ locals.tags }>
-      <Tags mode={ TAGS_MODE.FILTER } tags={ tags } />
+      <Tags mode={ TAGS_MODE.FILTER } allTags={ allTags } />
     </div>
     <div class={ locals.container }>
       { files.map(n => map(n)) }   
