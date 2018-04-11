@@ -3,6 +3,9 @@ import { h, app } from 'hyperapp'
 import Tree from './Tree'
 import Detail from './Detail'
 import ICON from './ICON'
+import FileExplorer from './FileExplorer'
+
+import * as business from '../../business'
 
 import locals from '../styles/App.sass'
 
@@ -11,9 +14,20 @@ import locals from '../styles/App.sass'
 /*
  * define struct Node
  * - name: strig
+ * - mediaPath: string
  * - children: Array<Node>
  * - isExpand: boolean
  * - icon: string
+ * - isSelected: boolean
+ * - type: string<file|dir|image|video>
+ * - tags: Array<Tag>
+ */
+
+/*
+ * define struct Tag
+ * - name: string
+ * - color: string
+ * - isSelected: boolean
  */
 
 const state = {
@@ -27,10 +41,12 @@ const state = {
       icon: 'subdir'
     }],
     isExpand: true,
-    icon: 'root'
+    icon: 'root',
+    tags: [{}, {}],
+    stars: 2,
   },
+  currentNode: null,
   root: '~/Movies',
-  stars: 2,
   tags: [{
     name: '纯爱',
     color: '#C20228'
@@ -38,21 +54,24 @@ const state = {
 }
 
 const actions = {
-  loadDir() {
-    console.log('TODO: load dir')
-  }
+  ...business
 }
 
-const view = ({ fileTreeRoot, root, stars, tags }, actions) => (
+const view = ({ fileTreeRoot, root, tags, currentNode }, actions) => (
   <div class={ locals.app }>
     <div class={ locals.main }>
       <div class={ locals.tree }>
         <Tree root={ fileTreeRoot }/>
       </div>
-      <div class={ locals.file } />
-      <div class={ locals.detail }>
-        <Detail stars={ stars  } tags={ tags } />
+      <div class={ locals.file }>
+        <FileExplorer tags={ tags } />
       </div>
+      {
+        currentNode &&
+          <div class={ locals.detail }>
+            <Detail stars={ currentNode.stars } tags={ currentNode.tags } />
+          </div>
+      }
     </div>
     <div class={ locals.root }>
       <ICON iconName="root" />

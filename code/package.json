@@ -4,9 +4,9 @@
     "description": "manage our resources",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack-dev-server --mode development --progress --hot --hotOnly --config ./build/webpack.config.js",
         "build": "webpack --mode production --progress --config ./build/webpack.config.js --env.prod",
+        "elec:dev": "cp main.js dist/main.js && NODE_ENV=development electron dist/main.js",
         "elec": "cp main.js dist/main.js && electron dist/main.js"
     },
     "keywords": [
@@ -25,6 +25,7 @@
         "babel-plugin-transform-react-jsx": "^6.24.1",
         "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-env": "^1.6.1",
+        "babel-preset-stage-3": "^6.24.1",
         "babel-runtime": "^6.26.0",
         "css-loader": "^0.28.9",
         "extract-text-webpack-plugin": "^4.0.0-beta.0",

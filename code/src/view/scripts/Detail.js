@@ -5,8 +5,9 @@ import Stars from './Stars'
 
 import locals from '../styles/Detail.sass'
 
-export default ({ stars, tags, actress, comment }) => (
+export default ({ name = '未命名文件', stars, tags, actress, comment }) => (
   <div class={ locals.detail }>
+    <div class={ locals.name }>{ name }</div>
     <div class={ locals.stars }>
       <Stars stars={ stars }/>
     </div>
