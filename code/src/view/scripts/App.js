@@ -53,7 +53,10 @@ const state = {
             rawPath: '~/Movies/YRH-093.mp4',
             name: 'YRH-093',
             type: 'video',
-            isPlaying: false
+            isPlaying: false,
+            actress: '波多野结衣',
+            comment: '很漂亮',
+            stars: 5
           },
           {
             rawPath: '~/Movies/YRH-093.jpg',
@@ -95,7 +98,8 @@ const actions = {
       currentNode: node
     }
   },
-  expandNode: node => ((node.isExpand = !node.isExpand), node)
+  expandNode: node => ((node.isExpand = !node.isExpand), node),
+  rate: loves => state => ((state.currentNode.stars = loves), { ...state })
 }
 
 const view = ({ fileTreeRoot, root, allTags, currentNode }, actions) => (
@@ -114,7 +118,14 @@ const view = ({ fileTreeRoot, root, allTags, currentNode }, actions) => (
       {currentNode &&
         currentNode.type !== 'root' && (
           <div class={locals.detail}>
-            <Detail stars={currentNode.stars} tags={currentNode.tags} />
+            <Detail
+              stars={currentNode.stars}
+              tags={currentNode.tags}
+              name={currentNode.name}
+              actress={currentNode.actress}
+              comment={currentNode.comment}
+              ratingHandler={actions.rate}
+            />
           </div>
         )}
     </div>
