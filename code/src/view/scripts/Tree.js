@@ -5,22 +5,37 @@ import ICON from './ICON'
 
 import locals from '../styles/Tree.sass'
 
-// <ICON iconName="root"></ICON>
-const mapTo = ({ name, icon, isExpand = false, children = [] }) => (
-  <div class={ locals.node }>
-    <ICON iconName={ icon }></ICON>
-    <span class={ locals.name }>{ name }</span>
-    { isExpand && children.map(n => mapTo(n)) }
-  </div>
-)
+const isFocusClassName = isSelected =>
+  isSelected ? [locals.name, locals.focus].join(' ') : locals.name
 
-export default ({ root }) => (
-  <div class={ locals.tree }>
-    <div class={ locals.logo }>
+const mapToElement = (node, selectNodeHandler, expandNodeHandler) => {
+  const { name, type, isExpand = false, children = [], isSelected } = node
+  return (
+    <div
+      class={locals.node}
+      onclick={e => (e.stopPropagation(), selectNodeHandler(node))}>
+      {type === 'subdir' && (
+        <span onclick={e => (e.stopPropagation(), expandNodeHandler(node))}>
+          <ICON iconName={isExpand ? 'subdirFocus' : 'subdir'} />
+        </span>
+      )}
+      {type !== 'subdir' && <ICON iconName={type} />}
+      <span class={isFocusClassName(isSelected)}>{name}</span>
+      {isExpand &&
+        children.map(n =>
+          mapToElement(n, selectNodeHandler, expandNodeHandler)
+        )}
+    </div>
+  )
+}
+
+export default ({ root, selectNodeHandler, expandNodeHandler }) => (
+  <div class={locals.tree}>
+    <div class={locals.logo}>
       <LOGO />
     </div>
-    <div class={ locals.container }>
-      { mapTo(root) }
+    <div class={locals.container}>
+      {mapToElement(root, selectNodeHandler, expandNodeHandler)}
     </div>
   </div>
 )

@@ -13,18 +13,24 @@
   flex: 1 1 auto
   padding: 30px 20px
   box-sizing: border-box
+  overflow: auto
+
+.expand
+  position: absolute
 
 .name
   font-size: 14px
   color: #9B9B9B
   vertical-align: middle
   margin: 0 0 0 10px
+  position: relative
   &.focus
     color: #E7E7E7
 
 .node
+  cursor: pointer
   > span
     position: relative
     top: 2px
   > .node
-    margin: 10px 0 0 24px
+    padding: 5px 0 5px 24px

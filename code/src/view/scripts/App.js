@@ -9,8 +9,6 @@ import * as business from '../../business'
 
 import locals from '../styles/App.sass'
 
-//import readDir from '../../business/readDir'
-
 /*
  * define struct Node
  * - name: strig
@@ -32,50 +30,97 @@ import locals from '../styles/App.sass'
 
 const state = {
   fileTreeRoot: {
+    rawPath: '~/Movies',
     name: '/',
-    children: [{
-      name: 'MIDE-175',
-      icon: 'subdir'
-    }, {
-      name: 'MIDE-175',
-      icon: 'subdir'
-    }],
+    children: [
+      {
+        rawPath: '~/Movies/MIDE-175',
+        name: 'MIDE-175',
+        type: 'subdir'
+      },
+      {
+        rawPath: '~/Movies/MIDE-176',
+        name: 'MIDE-176',
+        type: 'subdir'
+      },
+      {
+        rawPath: '~/Movies/YRH-093',
+        name: 'YRH-093',
+        type: 'subdir',
+        isExpand: true,
+        children: [
+          {
+            rawPath: '~/Movies/YRH-093.mp4',
+            name: 'YRH-093',
+            type: 'video',
+            isPlaying: false
+          },
+          {
+            rawPath: '~/Movies/YRH-093.jpg',
+            name: 'YRH-093',
+            type: 'image'
+          }
+        ]
+      }
+    ],
     isExpand: true,
-    icon: 'root',
+    type: 'root',
     tags: [{}, {}],
-    stars: 2,
+    stars: 2
   },
   currentNode: null,
   root: '~/Movies',
-  tags: [{
-    name: '纯爱',
-    color: '#C20228'
-  }, {}, {}, {}, {}, {}]
+  allTags: [
+    {
+      name: '纯爱',
+      color: '#C20228'
+    },
+    {},
+    {},
+    {},
+    {},
+    {}
+  ]
 }
 
 const actions = {
-  ...business
+  ...business,
+  selectNode: node => state => {
+    if (state.currentNode) state.currentNode.isSelected = false
+
+    node.isSelected = true
+
+    return {
+      ...state,
+      currentNode: node
+    }
+  },
+  expandNode: node => ((node.isExpand = !node.isExpand), node)
 }
 
-const view = ({ fileTreeRoot, root, tags, currentNode }, actions) => (
-  <div class={ locals.app }>
-    <div class={ locals.main }>
-      <div class={ locals.tree }>
-        <Tree root={ fileTreeRoot }/>
+const view = ({ fileTreeRoot, root, allTags, currentNode }, actions) => (
+  <div class={locals.app}>
+    <div class={locals.main}>
+      <div class={locals.tree}>
+        <Tree
+          root={fileTreeRoot}
+          selectNodeHandler={actions.selectNode}
+          expandNodeHandler={actions.expandNode}
+        />
       </div>
-      <div class={ locals.file }>
-        <FileExplorer tags={ tags } />
+      <div class={locals.file}>
+        <FileExplorer tags={allTags} />
       </div>
-      {
-        currentNode &&
-          <div class={ locals.detail }>
-            <Detail stars={ currentNode.stars } tags={ currentNode.tags } />
+      {currentNode &&
+        currentNode.type !== 'root' && (
+          <div class={locals.detail}>
+            <Detail stars={currentNode.stars} tags={currentNode.tags} />
           </div>
-      }
+        )}
     </div>
-    <div class={ locals.root }>
+    <div class={locals.root}>
       <ICON iconName="root" />
-      <span>{ root }</span>
+      <span>{root}</span>
     </div>
   </div>
 )
