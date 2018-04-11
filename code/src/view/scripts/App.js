@@ -74,6 +74,7 @@ const state = {
   currentNode: null,
   root: '~/Movies',
   isAddingTag: false,
+  searchTags: [],
   allTags: [
     {
       name: '纯爱',
@@ -117,13 +118,21 @@ const actions = {
 
     const tag = state.allTags[index]
 
-    if (!state.currentNode.tags)
-      state.currentNode.tags = []
+    if (!state.currentNode.tags) state.currentNode.tags = []
 
     if (state.currentNode.tags.filter(n => n.name === tag.name).length > 0)
-      state.currentNode.tags = state.currentNode.tags.filter(n => n.name !== tag.name)
-    else
-      state.currentNode.tags.push(tag)
+      state.currentNode.tags = state.currentNode.tags.filter(
+        n => n.name !== tag.name
+      )
+    else state.currentNode.tags.push(tag)
+
+    return { ...state }
+  },
+  searchByTags: index => state => {
+    const tag = state.allTags[index]
+    if (state.searchTags.filter(n => n.name === tag.name).length > 0)
+      state.searchTags = state.searchTags.filter(n => n.name !== tag.name)
+    else state.searchTags.push(tag)
 
     return { ...state }
   },
@@ -135,11 +144,20 @@ const actions = {
     else state.currentNode.tags = [tag]
 
     return { ...state }
+  },
+  saveDesc: desc => state => {
+    if (!state.currentNode) return
+
+    state.currentNode.actress = desc.actress
+    state.currentNode.comment = desc.comment
+    state.currentNode = null
+
+    return { ...state }
   }
 }
 
 const view = (
-  { fileTreeRoot, root, allTags, currentNode, isAddingTag },
+  { fileTreeRoot, root, allTags, searchTags, currentNode, isAddingTag },
   actions
 ) => (
   <div class={locals.app}>
@@ -152,7 +170,11 @@ const view = (
         />
       </div>
       <div class={locals.file}>
-        <FileExplorer allTags={allTags} />
+        <FileExplorer
+          searchTags={searchTags}
+          allTags={allTags}
+          selectTagHandler={actions.searchByTags}
+        />
       </div>
       {currentNode &&
         currentNode.type !== 'root' && (
@@ -169,6 +191,7 @@ const view = (
               addTagHandler={actions.addTag}
               selectTagHandler={actions.selectTag}
               saveTagHandler={actions.saveTag}
+              saveDescHandler={actions.saveDesc}
             />
           </div>
         )}

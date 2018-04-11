@@ -14,7 +14,7 @@ const onSaveButtonClick = saveDescHandler => event => {
     .querySelector('.' + locals.comment)
     .querySelector('textarea').value
 
-  saveDescHandler(actress, comment)
+  saveDescHandler({ actress, comment })
 }
 
 export default ({

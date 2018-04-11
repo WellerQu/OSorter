@@ -10,17 +10,11 @@ const ICON_ADD_SIZE = {
 }
 
 const backgroundColor = (tag, selectedTags, mode) => {
-  if (mode === TAGS_MODE.EDITOR) {
-    return {
-      backgroundColor:
-        selectedTags.filter(n => n.name === tag.name).length > 0
-          ? tag.color
-          : 'Transparent'
-    }
-  } else if (mode === TAGS_MODE.FILTER) {
-
-  } else {
-    throw new Error('mode is not exists')
+  return {
+    backgroundColor:
+    selectedTags.filter(n => n.name === tag.name).length > 0
+    ? tag.color
+    : 'Transparent'
   }
 }
 
