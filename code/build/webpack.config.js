@@ -8,7 +8,7 @@ const COMMON_HTML_WEBPACK_PLUGIN_CONFIG = (name, chunks) => ({
   /* 
      * [see more](https://github.com/jantimon/html-webpack-plugin#configuration)
      */
-  title: 'Margaret',
+  title: 'OSorter',
   filename: `${name}.html`,
   template: './templates/tpl.html',
   /*

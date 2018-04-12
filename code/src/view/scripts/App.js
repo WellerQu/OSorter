@@ -9,6 +9,8 @@ import FileExplorer from './FileExplorer'
 import { FILE_TYPE } from './constants'
 import { walkTree } from './utils'
 
+import createStoreObject from '../../model/createStoreObject'
+
 import locals from '../styles/App.sass'
 
 /*
@@ -31,7 +33,6 @@ import locals from '../styles/App.sass'
  */
 
 const state = {
-  root: '~/Movies',
   allTags: [
     {
       name: '纯爱',
@@ -122,12 +123,35 @@ const actions = {
       }
     })
 
-    console.info(state.fileIndex)
-
     return { ...state }
   },
-  saveIndex: () => {
+  saveIndex: async () => {
     state.message = 'saving index file'
+
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        const content = JSON.stringify(
+          createStoreObject(state.allTags, state.fileTreeRoot)
+        )
+        //const fs = require('fs')
+        //const path = require('path')
+        //const metaPath = path.resolve(
+          //path.join(state.fileTreeRoot.rawPath, '.META')
+        //)
+
+        //await new Promise((resolve, reject) => {
+          //fs.writeFile(metaPath, content, err => {
+            //if (err) return reject(err)
+            //resolve()
+          //})
+        //})
+          //.then(() => (state.message = 'saved success'))
+          //.catch(err => (state.message = 'saved failed'))
+      }
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
 
     return { ...state }
   },
@@ -193,10 +217,14 @@ const actions = {
       })
       state.showFiles = files
     } else {
-      state.showFiles = state.searchTags.reduce((files, tag) => {
-        Array.prototype.push.apply(files, state.fileIndex.get(tag.name))
+      state.showFiles = Array.from(state.searchTags.reduce((files, tag) => {
+        const element = state.fileIndex.get(tag.name)
+        element.forEach(f => {
+          if (!files.has(f))
+            files.add(f)
+        })
         return files
-      }, [])
+      }, new Set()))
     }
 
     return { ...state }
@@ -212,9 +240,7 @@ const actions = {
     if (state.currentNode.tags) state.currentNode.tags.push(tag)
     else state.currentNode.tags = [tag]
 
-    state.fileIndex.set(tag.name, [])
-
-    console.info(state.fileIndex)
+    state.fileIndex.set(tag.name, [state.currentNode])
 
     return { ...state }
   },
@@ -237,7 +263,8 @@ const actions = {
     return { ...state }
   },
   back: () => state => {
-    state.currentNode = state.lastNode.pop()
+    if (state.lastNode.length > 0)
+      state.currentNode = state.lastNode.pop()
 
     return { ...state }
   }
@@ -246,7 +273,6 @@ const actions = {
 const view = (
   {
     fileTreeRoot,
-    root,
     allTags,
     showFiles,
     searchTags,
@@ -299,28 +325,29 @@ const view = (
             </div>
           )}
       </div>
-      {currentNode && (
-        <div class={locals.detail}>
-          <Detail
-            stars={currentNode.stars}
-            tags={currentNode.tags}
-            allTags={allTags}
-            name={currentNode.name}
-            actress={currentNode.actress}
-            comment={currentNode.comment}
-            ratingHandler={actions.rate}
-            isAddingTag={isAddingTag}
-            addTagHandler={actions.addTag}
-            selectTagHandler={actions.selectTag}
-            saveTagHandler={actions.saveTag}
-            saveDescHandler={actions.saveDesc}
-          />
-        </div>
-      )}
+      {currentNode &&
+        currentNode.type !== 'root' && (
+          <div class={locals.detail}>
+            <Detail
+              stars={currentNode.stars}
+              tags={currentNode.tags}
+              allTags={allTags}
+              name={currentNode.name}
+              actress={currentNode.actress}
+              comment={currentNode.comment}
+              ratingHandler={actions.rate}
+              isAddingTag={isAddingTag}
+              addTagHandler={actions.addTag}
+              selectTagHandler={actions.selectTag}
+              saveTagHandler={actions.saveTag}
+              saveDescHandler={actions.saveDesc}
+            />
+          </div>
+        )}
     </div>
     <div class={locals.root}>
       <ICON iconName="root" />
-      <span>{root}</span>
+      <span>{fileTreeRoot.rawPath}</span>
       <span>{message}</span>
     </div>
   </div>
@@ -332,7 +359,7 @@ export default instance
 instance.loadIndex()
 
 hotkeys(
-  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+s,ctrl+r',
+  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+s,ctrl+r,esc',
   (event, handler) => {
     switch (handler.key) {
       case 'ctrl+t':
@@ -371,6 +398,8 @@ hotkeys(
       case 'ctrl+r':
         instance.loadIndex()
         break
+      case 'esc':
+        instance.back()
       default:
         console.info('no hot key')
     }

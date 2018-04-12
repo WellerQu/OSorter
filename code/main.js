@@ -13,24 +13,13 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 960, height: 700})
-
-  console.info(process.env.NODE_ENV)
-  if (process.env.NODE_ENV !== 'development') {
-    // and load the index.html of the app.
-    mainWindow.loadURL(url.format({
-      pathname: path.join(__dirname, 'index.html'),
-      protocol: 'file:',
-      slashes: true
-    }))
-  } else {
-    mainWindow.loadURL(url.format({
-      host: 'localhost:3000',
-      pathname: '/index.html',
-      protocol: 'http:',
-      slashes: true
-    }))
-  }
+  mainWindow = new BrowserWindow({width: 960, height: 700, minWidth: 960, minHeight: 700})
+  // and load the index.html of the app.
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
