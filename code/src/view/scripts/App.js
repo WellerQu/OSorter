@@ -31,6 +31,25 @@ import locals from '../styles/App.sass'
  */
 
 const state = {
+  root: '~/Movies',
+  allTags: [
+    {
+      name: '纯爱',
+      color: '#C20228'
+    },
+    {
+      name: 'JK',
+      color: '#C20228'
+    },
+    {
+      name: '御姐',
+      color: '#C20228'
+    },
+    {
+      name: '萝莉',
+      color: '#C20228'
+    }
+  ],
   fileTreeRoot: {
     rawPath: '~/Movies',
     name: '/',
@@ -71,31 +90,13 @@ const state = {
     type: 'root',
     stars: 2
   },
+  fileIndex: null, // new Map()
   currentNode: null,
   lastNode: [],
-  root: '~/Movies',
   message: '',
   isAddingTag: false,
   searchTags: [],
-  showFiles: [],
-  allTags: [
-    {
-      name: '纯爱',
-      color: '#C20228'
-    },
-    {
-      name: 'JK',
-      color: '#C20228'
-    },
-    {
-      name: '御姐',
-      color: '#C20228'
-    },
-    {
-      name: '萝莉',
-      color: '#C20228'
-    }
-  ]
+  showFiles: []
 }
 
 const actions = {
@@ -103,6 +104,25 @@ const actions = {
     state.message = 'loading index file'
 
     actions.selectNode(state.fileTreeRoot)
+
+    state.fileIndex = state.allTags.reduce((map, n) => {
+      return map.set(n.name, [])
+    }, new Map())
+
+    // 建立文件索引
+    let tagged
+    walkTree(state.fileTreeRoot, n => {
+      if (!n.tags) return true
+
+      if (n.type === FILE_TYPE.VIDEO || FILE_TYPE.IMAGE) {
+        n.tags.forEach(t => {
+          tagged = state.fileIndex.get(t.name)
+          tagged.push(n)
+        })
+      }
+    })
+
+    console.info(state.fileIndex)
 
     return { ...state }
   },
@@ -139,14 +159,23 @@ const actions = {
     if (!state.currentNode) return
 
     const tag = state.allTags[index]
+    let tagged = state.fileIndex.get(tag.name)
 
     if (!state.currentNode.tags) state.currentNode.tags = []
 
-    if (state.currentNode.tags.filter(n => n.name === tag.name).length > 0)
+    if (state.currentNode.tags.filter(n => n.name === tag.name).length > 0) {
       state.currentNode.tags = state.currentNode.tags.filter(
         n => n.name !== tag.name
       )
-    else state.currentNode.tags.push(tag)
+
+      // 更新索引
+      tagged = tagged.filter(n => n.rawPath !== state.currentNode.rawPath)
+      state.fileIndex.set(tag.name, tagged)
+    } else {
+      // 更新索引
+      state.currentNode.tags.push(tag)
+      tagged.push(state.currentNode)
+    }
 
     return { ...state }
   },
@@ -156,14 +185,36 @@ const actions = {
       state.searchTags = state.searchTags.filter(n => n.name !== tag.name)
     else state.searchTags.push(tag)
 
+    if (state.searchTags.length === 0) {
+      const files = []
+      walkTree(state.currentNode, n => {
+        if (n.type === FILE_TYPE.VIDEO || n.type === FILE_TYPE.IMAGE)
+          files.push(n)
+      })
+      state.showFiles = files
+    } else {
+      state.showFiles = state.searchTags.reduce((files, tag) => {
+        Array.prototype.push.apply(files, state.fileIndex.get(tag.name))
+        return files
+      }, [])
+    }
+
     return { ...state }
   },
   saveTag: tag => state => {
     state.isAddingTag = false
+
+    if (state.allTags.filter(n => n.name === tag.name).length > 0)
+      return { ...state }
+
     state.allTags.push(tag)
 
     if (state.currentNode.tags) state.currentNode.tags.push(tag)
     else state.currentNode.tags = [tag]
+
+    state.fileIndex.set(tag.name, [])
+
+    console.info(state.fileIndex)
 
     return { ...state }
   },
