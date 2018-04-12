@@ -51,6 +51,36 @@ ul, li
   
 .file
   flex: auto
+  display: flex
+  flex-flow: column nowrap
+  padding: 30px 20px
+  box-sizing: border-box
 
 .detail
   flex: 0 0 280px
+
+.preview
+  video, img
+    display: block
+    width: 100%
+
+.toolbar
+  flex: 0 0 32px
+  display: flex
+  justify-content: flex-end
+  i
+    margin: 0 5px 0 0
+  button
+    $bgColor: #3F3F3F
+    outline: none
+    border: none
+    background: $bgColor
+    color: #FFF
+    font-size: 10px
+    border-radius: 5px
+    height: 22px
+    box-sizing: border-box
+    &:hover
+      background: lighten($bgColor, 10%)
+    &:active
+      background: darken($bgColor, 10%)

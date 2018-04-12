@@ -12,37 +12,45 @@ const STYLE_VIDEO_SIZE = {
   height: 70
 }
 
-const map = ({
-  name = '文件名',
-  type = FILE_TYPE.FILE,
-  mediaPath = 'file:///Users/qiuwei/Movies/hnds026pl.jpg',
-  isPlaying = false
-}) => (
-  <div class={[locals.file, locals.focus].join(' ')}>
-    <div class={locals.preview}>
-      {type === FILE_TYPE.VIDEO && (
-        <video
-          src={mediaPath}
-          width={STYLE_VIDEO_SIZE.width}
-          height={STYLE_VIDEO_SIZE.height}
-        />
-      )}
-      {type === FILE_TYPE.VIDEO &&
-        !!!isPlaying && <div class={locals.play} onclick={a => a} />}
-      {type === FILE_TYPE.VIDEO &&
-        !!isPlaying && <div class={locals.pause} onclick={a => a} />}
-      {type === FILE_TYPE.IMAGE && <img src={mediaPath} />}
-      {type === FILE_TYPE.FILE && <ICON iconName="default" />}
+const isSelectClassName = isSelected => {
+  if (isSelected) return [locals.file, locals.focus].join(' ')
+  else return locals.file
+}
+
+const mapToElement = (file, selectFileHandler) => {
+  const {
+    name = '文件名',
+    type = FILE_TYPE.FILE,
+    rawPath = 'file:///Users/qiuwei/Movies/hnds026pl.jpg',
+    isSelected = false
+  } = file
+
+  return (
+    <div
+      class={isSelectClassName(isSelected)}
+      onclick={() => selectFileHandler(file)}>
+      <div class={locals.preview}>
+        {type === FILE_TYPE.VIDEO && (
+          <video
+            src={rawPath}
+            width={STYLE_VIDEO_SIZE.width}
+            height={STYLE_VIDEO_SIZE.height}
+          />
+        )}
+        {type === FILE_TYPE.IMAGE && <img src={rawPath} />}
+        {type === FILE_TYPE.FILE && <ICON iconName="default" />}
+      </div>
+      <div class={locals.name}>{name}</div>
     </div>
-    <div class={locals.name}>{name}</div>
-  </div>
-)
+  )
+}
 
 export default ({
   searchTags,
-  files = [{}, {}, {}, {}],
+  files = [],
   allTags = [],
-  selectTagHandler
+  selectTagHandler,
+  selectFileHandler
 }) => (
   <div class={locals.explorer}>
     <div class={locals.tags}>
@@ -53,6 +61,14 @@ export default ({
         selectTagHandler={selectTagHandler}
       />
     </div>
-    <div class={locals.container}>{files.map(n => map(n))}</div>
+    <div class={locals.toolbar}>
+      <button>
+        <ICON iconName="export" size={{ width: '12px', height: '12px' }} />
+        导出到剪切板
+      </button>
+    </div>
+    <div class={locals.container}>
+      {files.map(n => mapToElement(n, selectFileHandler))}
+    </div>
   </div>
 )
