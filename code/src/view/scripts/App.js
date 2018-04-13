@@ -33,11 +33,6 @@ import locals from '../styles/App.sass'
  * - isSelected: boolean
  */
 
-const hasCoverClassName = hasDialog => {
-  if (hasDialog) return [locals.app, locals.gauss].join(' ')
-  else return locals.app
-}
-
 const state = {
   allTags: [
     {
@@ -298,17 +293,28 @@ const actions = {
 
     return { ...state }
   },
-  wantToEditRoot: () => state => {
-    state.isEditingRoot = true
-    return { ...state }
-  },
-  cancelEditRoot: () => state => {
-    state.isEditingRoot = false
+  openDirectory: () => (state, actions) => {
+    try {
+      const { dialog } = require('electron').remote
+      const dirs = dialog.showOpenDialog({
+        title: '设置资源目录',
+        properties: ['openDirectory']
+      })
+
+      if (dirs && dirs.length > 0) {
+        actions.saveRoot(dirs[0])
+      }
+
+      state.message = 'set root success'
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
+
     return { ...state }
   },
   saveRoot: path => (state, actions) => {
     state.fileTreeRoot.rawPath = path
-    state.isEditingRoot = false
 
     actions.loadIndex()
 
@@ -368,26 +374,11 @@ const view = (
     currentNode,
     lastNode,
     isAddingTag,
-    isEditingRoot,
     message
   },
   actions
 ) => (
-  <div class={hasCoverClassName(isEditingRoot)}>
-    <div class={locals.cover} onclick={actions.cancelEditRoot} />
-    {isEditingRoot && (
-      <Dialog>
-        <div class={locals.form}>
-          <label for="">资源目录</label>
-          <input
-            type="text"
-            oncreate={e => e.focus()}
-            value={fileTreeRoot.rawPath}
-            onkeyup={e => e.keyCode === 13 && actions.saveRoot(e.target.value)}
-          />
-        </div>
-      </Dialog>
-    )}
+  <div class={locals.app}>
     <div class={locals.main}>
       <div class={locals.tree}>
         <Tree
@@ -458,11 +449,9 @@ const view = (
       <ICON iconName="root" />
       <span>{fileTreeRoot.rawPath}</span>
       <span>
-        {!isEditingRoot && (
-          <button onclick={actions.wantToEditRoot}>
-            <ICON iconName="pencil" size={{ height: '12px', width: '12px' }} />
-          </button>
-        )}
+        <button onclick={actions.openDirectory}>
+          <ICON iconName="pencil" size={{ height: '12px', width: '12px' }} />
+        </button>
       </span>
       <span class={locals.message}>{message}</span>
     </div>
