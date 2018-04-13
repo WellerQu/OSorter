@@ -37,19 +37,23 @@ const state = {
   allTags: [
     {
       name: '纯爱',
-      color: '#C20228'
+      color: '#E61111'
     },
     {
       name: 'JK',
-      color: '#C20228'
+      color: '#E61111'
     },
     {
       name: '御姐',
-      color: '#C20228'
+      color: '#E61111'
     },
     {
       name: '萝莉',
-      color: '#C20228'
+      color: '#E61111'
+    },
+    {
+      name: '剧情',
+      color: '#E61111'
     }
   ],
   fileTreeRoot: {
@@ -108,6 +112,7 @@ const actions = {
     try {
       const fs = require('fs')
       const { rawPath } = state.fileTreeRoot
+
       state.message = 'loaded index file'
     } catch (e) {
       /* handle error */
@@ -136,41 +141,46 @@ const actions = {
 
     return { ...state }
   },
-  saveIndex: () => async state => {
-    state.message = 'saving index file'
+  saveIndex: () => (state, actions) => {
+    new Promise((resolve, reject) => {
+      state.message = 'saving index filei, waiting...'
 
-    try {
-      if (process.env.NODE_ENV === 'production') {
-        const content = JSON.stringify(
-          createStoreObject(state.allTags, state.fileTreeRoot)
-        )
-        const fs = require('fs')
-        const path = require('path')
-        const metaPath = path.resolve(
-          path.join(state.fileTreeRoot.rawPath, '.META')
-        )
+      const content = JSON.stringify(state.allTags)
+      const fs = require('fs')
+      const path = require('path')
+      const dataTagPath = path.join(state.fileTreeRoot.rawPath, '.DATA_TAGS')
 
-        await new Promise((resolve, reject) => {
-          fs.writeFile(metaPath, content, err => {
-            if (err) return reject(err)
-            resolve()
-          })
-        })
-          .then(() => (state.message = 'saved success'))
-          .catch(err => (state.message = 'saved failed'))
-      }
-    } catch (e) {
-      /* handle error */
-      state.message = e.message
-    }
+      fs.writeFile(dataTagPath, content, err => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+      .then(() => {
+        state.message = 'saved success'
+        actions.echo({ ...state })
+      })
+      .catch(err => {
+        state.message = err.message || err
+        actions.echo({ ...state })
+      })
 
     return { ...state }
+  },
+  echo: state => {
+    return state
   },
   selectNode: node => state => {
     walkTree(state.fileTreeRoot, n => ((n.isSelected = false), n))
 
     node.isSelected = true
-    state.currentNode && state.lastNode.push(state.currentNode)
+    if (state.currentNode) {
+      state.lastNode.push(state.currentNode)
+      if (state.lastNode.length > 5)
+        state.lastNode = state.lastNode.slice(
+          state.lastNode.length - 5,
+          state.lastNode.length
+        )
+    }
     state.currentNode = node
 
     console.log(state.lastNode)
@@ -464,7 +474,7 @@ export default instance
 instance.loadIndex()
 
 hotkeys(
-  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+s,ctrl+r,ctrl+e,ctrl+shift+r,esc',
+  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+shift+5,ctrl+s,ctrl+r,ctrl+e,ctrl+shift+r,esc',
   (event, handler) => {
     switch (handler.key) {
       case 'ctrl+t':
@@ -496,6 +506,9 @@ hotkeys(
         break
       case 'ctrl+shift+4':
         instance.selectTag(3)
+        break
+      case 'ctrl+shift+5':
+        instance.selectTag(4)
         break
       case 'ctrl+s':
         instance.saveIndex()

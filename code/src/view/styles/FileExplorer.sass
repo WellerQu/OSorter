@@ -34,6 +34,15 @@
   align-content: flex-start
   flex-wrap: wrap
   overflow: auto
+  position: relative
+  &:empty:after
+    content: '没有文件'
+    position: absolute
+    left: 50%
+    top: 50%
+    transform: translate(-50%, -50%)
+    font-size: 12px
+    color: #848484
 
 .file
   width: 100px

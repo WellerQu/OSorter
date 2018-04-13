@@ -11,7 +11,7 @@ export default ({ stars = 0, max = 5, ratingHandler }) => (
     {Array(max)
       .fill(0)
       .map((_, i) => (
-        <span onclick={() => ratingHandler(i + 1)}>
+        <span onmouseover={() => ratingHandler(i + 1)}>
           {i < stars && <ICON iconName="starOn" />}
           {i >= stars && <ICON iconName="starOff" />}
         </span>

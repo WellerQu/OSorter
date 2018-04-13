@@ -6,8 +6,8 @@
     "scripts": {
         "dev": "webpack-dev-server --mode development --progress --hot --hotOnly --config ./build/webpack.config.js",
         "build": "webpack --mode production --progress --config ./build/webpack.config.js --env.prod",
-        "elec:dev": "cp main.js dist/main.js && NODE_ENV=development electron dist/main.js",
-        "elec": "cp main.js dist/main.js && electron dist/main.js"
+        "elec": "cp main.js dist/main.js && electron dist/main.js",
+        "start": "npm run build && npm run elec"
     },
     "keywords": [
         "osorter",
