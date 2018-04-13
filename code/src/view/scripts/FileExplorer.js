@@ -21,7 +21,7 @@ const mapToElement = (file, selectFileHandler) => {
   const {
     name = '文件名',
     type = FILE_TYPE.FILE,
-    rawPath = 'file:///Users/qiuwei/Movies/hnds026pl.jpg',
+    rawPath = '/Users/qiuwei/Movies/hnds026pl.jpg',
     isSelected = false
   } = file
 
@@ -32,12 +32,12 @@ const mapToElement = (file, selectFileHandler) => {
       <div class={locals.preview}>
         {type === FILE_TYPE.VIDEO && (
           <video
-            src={rawPath}
+            src={`file://${rawPath}`}
             width={STYLE_VIDEO_SIZE.width}
             height={STYLE_VIDEO_SIZE.height}
           />
         )}
-        {type === FILE_TYPE.IMAGE && <img src={rawPath} />}
+        {type === FILE_TYPE.IMAGE && <img src={`file://${rawPath}`} />}
         {type === FILE_TYPE.FILE && <ICON iconName="default" />}
       </div>
       <div class={locals.name}>{name}</div>

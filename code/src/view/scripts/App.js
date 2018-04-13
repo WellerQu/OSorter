@@ -78,7 +78,7 @@ const state = {
         isExpand: true,
         children: [
           {
-            rawPath: 'file:///Users/qiuwei/Movies/SNIS985/SNIS985.mp4',
+            rawPath: '/Users/qiuwei/Movies/SNIS985/SNIS985.mp4',
             name: 'SNIS985',
             type: 'video',
             actress: 'RION',
@@ -86,7 +86,7 @@ const state = {
             stars: 5
           },
           {
-            rawPath: 'file:///Users/qiuwei/Movies/SNIS985/SNIS985.jpg',
+            rawPath: '/Users/qiuwei/Movies/SNIS985/SNIS985.jpg',
             name: 'SNIS985',
             type: 'image'
           }
@@ -111,6 +111,7 @@ const actions = {
   loadIndex: () => (state, actions) => {
     state.message = 'loading index file'
     try {
+      const fs = require('fs')
       const { rawPath } = state.fileTreeRoot
       state.message = 'loaded index file'
     } catch (e) {
@@ -317,7 +318,22 @@ const actions = {
     try {
       const { clipboard } = require('electron')
       clipboard.writeText(path)
+
       state.message = `copied ${path}`
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
+
+    return { ...state }
+  },
+  openFile: path => state => {
+    try {
+      const { shell } = require('electron')
+      shell.showItemInFolder(path)
+      shell.openItem(path)
+
+      state.message = 'open success'
     } catch (e) {
       /* handle error */
       state.message = e.message
@@ -404,13 +420,13 @@ const view = (
         {currentNode &&
           currentNode.type === FILE_TYPE.VIDEO && (
             <div class={locals.preview}>
-              <video src={currentNode.rawPath} controls />
+              <video src={`file://${currentNode.rawPath}`} controls />
             </div>
           )}
         {currentNode &&
           currentNode.type === FILE_TYPE.IMAGE && (
             <div class={locals.preview}>
-              <img src={currentNode.rawPath} />
+              <img src={`file://${currentNode.rawPath}`} />
             </div>
           )}
       </div>
@@ -433,6 +449,7 @@ const view = (
               saveTagHandler={actions.saveTag}
               saveDescHandler={actions.saveDesc}
               copyRawPathHandler={actions.copyRawPath}
+              openFileHandler={actions.openFile}
             />
           </div>
         )}

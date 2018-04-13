@@ -32,6 +32,7 @@ export default ({
   saveTagHandler,
   saveDescHandler,
   copyRawPathHandler,
+  openFileHandler,
 }) => (
   <div class={locals.detail}>
     <div class={locals.name}>{name}</div>
@@ -39,6 +40,9 @@ export default ({
       <div title={rawPath}>{rawPath}</div>
       <button onclick={ () => copyRawPathHandler(rawPath) }>
         <ICON iconName="copy" size={{ width: '12px', height: '12px' }}></ICON>
+      </button>
+      <button onclick={ () => openFileHandler(rawPath) }>
+        <ICON iconName="openFile" size={{ width: '12px', height: '12px' }}></ICON>
       </button>
   </div>
     <div class={locals.stars}>
