@@ -2,9 +2,9 @@ export default (
   rawPath,
   name,
   type,
-  actress,
-  comment,
-  stars = 1,
+  actress = '',
+  comment = '',
+  stars = 0,
   tags = [],
   children = []
 ) => ({

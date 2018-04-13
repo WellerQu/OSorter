@@ -1,6 +1,6 @@
 export const FILE_TYPE = {
   ROOT: 'root',
-  FILE: 'file',
+  FILE: 'default',
   VIDEO: 'video',
   IMAGE: 'image',
   DIR: 'subdir'

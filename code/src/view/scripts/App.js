@@ -7,10 +7,11 @@ import Detail from './Detail'
 import ICON from './ICON'
 import FileExplorer from './FileExplorer'
 
-import { FILE_TYPE } from './constants'
+import { FILE_TYPE } from '../../constants'
 import { walkTree } from './utils'
 
-import createStoreObject from '../../model/createStoreObject'
+import loadTag from '../../controller/loadTag'
+import loadDir from '../../controller/loadDir'
 
 import locals from '../styles/App.sass'
 
@@ -34,69 +35,15 @@ import locals from '../styles/App.sass'
  */
 
 const state = {
-  allTags: [
-    {
-      name: '纯爱',
-      color: '#E61111'
-    },
-    {
-      name: 'JK',
-      color: '#E61111'
-    },
-    {
-      name: '御姐',
-      color: '#E61111'
-    },
-    {
-      name: '萝莉',
-      color: '#E61111'
-    },
-    {
-      name: '剧情',
-      color: '#E61111'
-    }
-  ],
+  allTags: [],
   fileTreeRoot: {
-    rawPath: '~/Movies',
     name: '/',
-    children: [
-      {
-        rawPath: '~/Movies/MIDE-175',
-        name: 'MIDE-175',
-        type: 'subdir'
-      },
-      {
-        rawPath: '~/Movies/MIDE-176',
-        name: 'MIDE-176',
-        type: 'subdir'
-      },
-      {
-        rawPath: '~/Movies/SNIS985',
-        name: 'SNIS985',
-        type: 'subdir',
-        isExpand: true,
-        children: [
-          {
-            rawPath: '/Users/qiuwei/Movies/SNIS985/SNIS985.mp4',
-            name: 'SNIS985',
-            type: 'video',
-            actress: 'RION',
-            comment: '很漂亮',
-            stars: 5
-          },
-          {
-            rawPath: '/Users/qiuwei/Movies/SNIS985/SNIS985.jpg',
-            name: 'SNIS985',
-            type: 'image'
-          }
-        ]
-      }
-    ],
+    rawPath: '~/Movies',
     isExpand: true,
-    type: 'root',
-    stars: 2
+    type: FILE_TYPE.ROOT,
+    children: []
   },
-  fileIndex: null, // new Map()
+  fileIndex: new Map(),
   currentNode: null,
   lastNode: [],
   message: '',
@@ -108,42 +55,55 @@ const state = {
 
 const actions = {
   loadIndex: () => (state, actions) => {
-    state.message = 'loading index file'
-    try {
+    new Promise((resolve, reject) => {
+      state.message = 'loading index file'
+      state.showFiles.length = 0
+      state.allTags.length = 0
       const fs = require('fs')
-      const { rawPath } = state.fileTreeRoot
-
-      state.message = 'loaded index file'
-    } catch (e) {
-      /* handle error */
-      state.message = e.message
-    }
-
-    // 读取节点后
-    actions.selectNode(state.fileTreeRoot)
-
-    state.fileIndex = state.allTags.reduce((map, n) => {
-      return map.set(n.name, [])
-    }, new Map())
-
-    // 建立文件索引
-    let tagged
-    walkTree(state.fileTreeRoot, n => {
-      if (!n.tags) return true
-
-      if (n.type === FILE_TYPE.VIDEO || FILE_TYPE.IMAGE) {
-        n.tags.forEach(t => {
-          tagged = state.fileIndex.get(t.name)
-          tagged.push(n)
-        })
+      const path = require('path')
+      try {
+        loadDir(state.fileTreeRoot, fs, path)
+        loadTag(state.allTags, state.fileTreeRoot.rawPath, fs, path)
+        resolve()
+      } catch (e) {
+        /* handle error */
+        reject(e)
       }
     })
+      .then(() => {
+        // 读取节点后
+        actions.selectNode(state.fileTreeRoot)
+
+        // 建立文件索引
+        state.fileIndex = state.allTags.reduce((map, n) => {
+          return map.set(n.name, [])
+        }, new Map())
+
+        let tagged
+        walkTree(state.fileTreeRoot, n => {
+          if (!n.tags) return true
+
+          if (n.type === FILE_TYPE.VIDEO || FILE_TYPE.IMAGE) {
+            n.tags.forEach(t => {
+              tagged = state.fileIndex.get(t.name)
+              tagged.push(n)
+            })
+          }
+        })
+
+        state.message = 'loaded success'
+        actions.echo({ ...state })
+      })
+      .catch(err => {
+        state.message = err.message || err
+        actions.echo({ ...state })
+      })
 
     return { ...state }
   },
   saveIndex: () => (state, actions) => {
     new Promise((resolve, reject) => {
-      state.message = 'saving index filei, waiting...'
+      state.message = 'saving index file, waiting...'
 
       const content = JSON.stringify(state.allTags)
       const fs = require('fs')
@@ -242,7 +202,7 @@ const actions = {
     } else {
       state.showFiles = Array.from(
         state.searchTags.reduce((files, tag) => {
-          const element = state.fileIndex.get(tag.name)
+          const element = state.fileIndex.get(tag.name) || []
           element.forEach(f => {
             if (!files.has(f)) files.add(f)
           })
@@ -430,6 +390,8 @@ const view = (
               <img src={`file://${currentNode.rawPath}`} />
             </div>
           )}
+        {currentNode &&
+          currentNode.type === FILE_TYPE.FILE && <div class={locals.preview} />}
       </div>
       {currentNode &&
         currentNode.type !== FILE_TYPE.ROOT &&

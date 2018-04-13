@@ -36,7 +36,7 @@
   overflow: auto
   position: relative
   &:empty:after
-    content: '没有文件'
+    content: '没有文件或文件格式暂不支持'
     position: absolute
     left: 50%
     top: 50%
@@ -59,6 +59,7 @@
 
 .preview
   min-height: 70px
+  max-height: 70px
   position: relative
   border: solid 1px Transparent
   border-radius: 5px

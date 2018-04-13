@@ -87,6 +87,8 @@ ul, li
 
 .tree
   flex: 0 0 240px
+  overflow: auto
+  word-break: break-all
   
 .file
   flex: auto
@@ -99,9 +101,19 @@ ul, li
   flex: 0 0 280px
 
 .preview
+  flex: 1 1 auto
+  overflow: auto
+  &:empty:after
+    content: '无法预览改文件, 暂时不支持的格式'
+    position: absolute
+    left: 50%
+    top: 50%
+    transform: translate(-50%, -50%)
+    font-size: 12px
+    color: #848484
   video, img
     display: block
-    width: 100%
+    max-width: 100%
 
 .toolbar
   flex: 0 0 32px

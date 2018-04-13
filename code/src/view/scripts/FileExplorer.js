@@ -3,7 +3,7 @@ import { h } from 'hyperapp'
 import ICON from './ICON'
 import Tags, { TAGS_MODE } from './Tags'
 
-import { FILE_TYPE } from './constants'
+import { FILE_TYPE } from '../../constants'
 
 import locals from '../styles/FileExplorer.sass'
 
