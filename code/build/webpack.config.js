@@ -1,8 +1,8 @@
-const webpack = require('webpack');
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const DIST_DIR = path.join(__dirname, '../dist');
+const webpack = require('webpack')
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const DIST_DIR = path.join(__dirname, '../dist')
 
 const COMMON_HTML_WEBPACK_PLUGIN_CONFIG = (name, chunks) => ({
   /* 
@@ -18,12 +18,12 @@ const COMMON_HTML_WEBPACK_PLUGIN_CONFIG = (name, chunks) => ({
   minify: false,
   hash: true,
   chunks, // []
-  excludeChunks: [],
-});
+  excludeChunks: []
+})
 
 const plugins = [
   new HtmlWebpackPlugin(
-    COMMON_HTML_WEBPACK_PLUGIN_CONFIG('index', ['vendor', 'margaret']),
+    COMMON_HTML_WEBPACK_PLUGIN_CONFIG('index', ['vendor', 'margaret'])
   ),
 
   /*
@@ -41,20 +41,20 @@ const plugins = [
     minChunks: 1,
     maxAsyncRequests: 5,
     maxInitialRequests: 3,
-    name: true,
+    name: true
   }),
-  new ExtractTextPlugin('margaret.css'),
-];
+  new ExtractTextPlugin('margaret.css')
+]
 
 module.exports = (env = {}) => ({
   entry: {
     vendor: ['hyperapp'],
-    margaret: './src/view/scripts/App.js',
+    margaret: './src/view/scripts/App.js'
   },
   output: {
     path: path.resolve(DIST_DIR),
     filename: '[name].js',
-    chunkFilename: '[id].bundle.js',
+    chunkFilename: '[id].bundle.js'
     // [see more](https://webpack.github.io/docs/configuration.html#output-publicpath)
     // publicPath: '',
   },
@@ -64,7 +64,7 @@ module.exports = (env = {}) => ({
       {
         test: /\.js[x]?/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
+        loader: 'babel-loader'
       },
       {
         // use sass-loader for *.sass files
@@ -78,13 +78,13 @@ module.exports = (env = {}) => ({
                 env.prod
                   ? '[hash:base64:5]'
                   : '[path]_[name]_[local]--[hash:base64:5]'
-              }`,
+              }`
             },
             'postcss-loader',
-            `sass-loader`,
-          ],
+            `sass-loader`
+          ]
           // publicPath: 'css/'
-        }),
+        })
       },
       {
         test: /\.json$/,
@@ -97,9 +97,20 @@ module.exports = (env = {}) => ({
           limit: 10000,
           name: '../dist/img/[name].[hash:7].[ext]'
         }
-      },
-    ],
+      }
+    ]
   },
+  externals: [
+    (function() {
+      var IGNORES = ['electron', 'fs', 'path']
+      return function(context, request, callback) {
+        if (IGNORES.indexOf(request) >= 0) {
+          return callback(null, "require('" + request + "')")
+        }
+        return callback()
+      }
+    })()
+  ],
   resolve: {},
   resolveLoader: {},
   devServer: {
@@ -107,8 +118,8 @@ module.exports = (env = {}) => ({
     open: true,
     overlay: {
       warnings: true,
-      errors: true,
+      errors: true
     },
-    port: 3000,
-  },
-});
+    port: 3000
+  }
+})

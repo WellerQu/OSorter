@@ -19,6 +19,7 @@ const onSaveButtonClick = saveDescHandler => event => {
 
 export default ({
   name = '未命名文件',
+  rawPath = '',
   stars,
   tags,
   allTags,
@@ -29,10 +30,17 @@ export default ({
   addTagHandler,
   selectTagHandler,
   saveTagHandler,
-  saveDescHandler
+  saveDescHandler,
+  copyRawPathHandler,
 }) => (
   <div class={locals.detail}>
     <div class={locals.name}>{name}</div>
+    <div class={locals.path}>
+      <div title={rawPath}>{rawPath}</div>
+      <button onclick={ () => copyRawPathHandler(rawPath) }>
+        <ICON iconName="copy" size={{ width: '12px', height: '12px' }}></ICON>
+      </button>
+  </div>
     <div class={locals.stars}>
       <Stars stars={stars} ratingHandler={ratingHandler} />
     </div>

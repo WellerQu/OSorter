@@ -1,6 +1,7 @@
 import { h, app } from 'hyperapp'
 import hotkeys from 'hotkeys-js'
 
+import Dialog from './Dialog'
 import Tree from './Tree'
 import Detail from './Detail'
 import ICON from './ICON'
@@ -31,6 +32,11 @@ import locals from '../styles/App.sass'
  * - color: string
  * - isSelected: boolean
  */
+
+const hasCoverClassName = hasDialog => {
+  if (hasDialog) return [locals.app, locals.gauss].join(' ')
+  else return locals.app
+}
 
 const state = {
   allTags: [
@@ -96,6 +102,7 @@ const state = {
   lastNode: [],
   message: '',
   isAddingTag: false,
+  isEditingRoot: false,
   searchTags: [],
   showFiles: []
 }
@@ -103,7 +110,15 @@ const state = {
 const actions = {
   loadIndex: () => (state, actions) => {
     state.message = 'loading index file'
+    try {
+      const { rawPath } = state.fileTreeRoot
+      state.message = 'loaded index file'
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
 
+    // 读取节点后
     actions.selectNode(state.fileTreeRoot)
 
     state.fileIndex = state.allTags.reduce((map, n) => {
@@ -125,7 +140,7 @@ const actions = {
 
     return { ...state }
   },
-  saveIndex: async () => {
+  saveIndex: () => async state => {
     state.message = 'saving index file'
 
     try {
@@ -133,20 +148,20 @@ const actions = {
         const content = JSON.stringify(
           createStoreObject(state.allTags, state.fileTreeRoot)
         )
-        //const fs = require('fs')
-        //const path = require('path')
-        //const metaPath = path.resolve(
-          //path.join(state.fileTreeRoot.rawPath, '.META')
-        //)
+        const fs = require('fs')
+        const path = require('path')
+        const metaPath = path.resolve(
+          path.join(state.fileTreeRoot.rawPath, '.META')
+        )
 
-        //await new Promise((resolve, reject) => {
-          //fs.writeFile(metaPath, content, err => {
-            //if (err) return reject(err)
-            //resolve()
-          //})
-        //})
-          //.then(() => (state.message = 'saved success'))
-          //.catch(err => (state.message = 'saved failed'))
+        await new Promise((resolve, reject) => {
+          fs.writeFile(metaPath, content, err => {
+            if (err) return reject(err)
+            resolve()
+          })
+        })
+          .then(() => (state.message = 'saved success'))
+          .catch(err => (state.message = 'saved failed'))
       }
     } catch (e) {
       /* handle error */
@@ -161,6 +176,8 @@ const actions = {
     node.isSelected = true
     state.currentNode && state.lastNode.push(state.currentNode)
     state.currentNode = node
+
+    console.log(state.lastNode)
 
     if (node.type === FILE_TYPE.ROOT || node.type === FILE_TYPE.DIR) {
       const files = []
@@ -217,20 +234,23 @@ const actions = {
       })
       state.showFiles = files
     } else {
-      state.showFiles = Array.from(state.searchTags.reduce((files, tag) => {
-        const element = state.fileIndex.get(tag.name)
-        element.forEach(f => {
-          if (!files.has(f))
-            files.add(f)
-        })
-        return files
-      }, new Set()))
+      state.showFiles = Array.from(
+        state.searchTags.reduce((files, tag) => {
+          const element = state.fileIndex.get(tag.name)
+          element.forEach(f => {
+            if (!files.has(f)) files.add(f)
+          })
+          return files
+        }, new Set())
+      )
     }
 
     return { ...state }
   },
   saveTag: tag => state => {
     state.isAddingTag = false
+
+    if (!tag.name) return { ...state }
 
     if (state.allTags.filter(n => n.name === tag.name).length > 0)
       return { ...state }
@@ -242,6 +262,10 @@ const actions = {
 
     state.fileIndex.set(tag.name, [state.currentNode])
 
+    return { ...state }
+  },
+  cancelAddTag: () => state => {
+    state.isAddingTag = false
     return { ...state }
   },
   saveDesc: desc => (state, actions) => {
@@ -263,8 +287,57 @@ const actions = {
     return { ...state }
   },
   back: () => state => {
-    if (state.lastNode.length > 0)
+    if (state.lastNode.length > 0) {
+      walkTree(state.fileTreeRoot, n => ((n.isSelected = false), n))
       state.currentNode = state.lastNode.pop()
+      state.currentNode.isSelected = true
+    }
+
+    console.log(state.lastNode)
+
+    return { ...state }
+  },
+  wantToEditRoot: () => state => {
+    state.isEditingRoot = true
+    return { ...state }
+  },
+  cancelEditRoot: () => state => {
+    state.isEditingRoot = false
+    return { ...state }
+  },
+  saveRoot: path => (state, actions) => {
+    state.fileTreeRoot.rawPath = path
+    state.isEditingRoot = false
+
+    actions.loadIndex()
+
+    return { ...state }
+  },
+  copyRawPath: path => state => {
+    try {
+      const { clipboard } = require('electron')
+      clipboard.writeText(path)
+      state.message = `copied ${path}`
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
+
+    return { ...state }
+  },
+  exportTo: () => state => {
+    const { showFiles = [] } = state
+    const content = showFiles.map(n => n.name).join('\r\n')
+
+    try {
+      const { clipboard } = require('electron')
+      clipboard.writeText(content)
+
+      state.message = 'copied files'
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
 
     return { ...state }
   }
@@ -279,11 +352,26 @@ const view = (
     currentNode,
     lastNode,
     isAddingTag,
+    isEditingRoot,
     message
   },
   actions
 ) => (
-  <div class={locals.app}>
+  <div class={hasCoverClassName(isEditingRoot)}>
+    <div class={locals.cover} onclick={actions.cancelEditRoot} />
+    {isEditingRoot && (
+      <Dialog>
+        <div class={locals.form}>
+          <label for="">资源目录</label>
+          <input
+            type="text"
+            oncreate={e => e.focus()}
+            value={fileTreeRoot.rawPath}
+            onkeyup={e => e.keyCode === 13 && actions.saveRoot(e.target.value)}
+          />
+        </div>
+      </Dialog>
+    )}
     <div class={locals.main}>
       <div class={locals.tree}>
         <Tree
@@ -310,6 +398,7 @@ const view = (
               allTags={allTags}
               selectTagHandler={actions.searchByTags}
               selectFileHandler={actions.selectFile}
+              exportToHandler={actions.exportTo}
             />
           )}
         {currentNode &&
@@ -326,13 +415,15 @@ const view = (
           )}
       </div>
       {currentNode &&
-        currentNode.type !== 'root' && (
+        currentNode.type !== FILE_TYPE.ROOT &&
+        currentNode.type !== FILE_TYPE.DIR && (
           <div class={locals.detail}>
             <Detail
               stars={currentNode.stars}
               tags={currentNode.tags}
               allTags={allTags}
               name={currentNode.name}
+              rawPath={currentNode.rawPath}
               actress={currentNode.actress}
               comment={currentNode.comment}
               ratingHandler={actions.rate}
@@ -341,6 +432,7 @@ const view = (
               selectTagHandler={actions.selectTag}
               saveTagHandler={actions.saveTag}
               saveDescHandler={actions.saveDesc}
+              copyRawPathHandler={actions.copyRawPath}
             />
           </div>
         )}
@@ -348,7 +440,14 @@ const view = (
     <div class={locals.root}>
       <ICON iconName="root" />
       <span>{fileTreeRoot.rawPath}</span>
-      <span>{message}</span>
+      <span>
+        {!isEditingRoot && (
+          <button onclick={actions.wantToEditRoot}>
+            <ICON iconName="pencil" size={{ height: '12px', width: '12px' }} />
+          </button>
+        )}
+      </span>
+      <span class={locals.message}>{message}</span>
     </div>
   </div>
 )
@@ -359,7 +458,7 @@ export default instance
 instance.loadIndex()
 
 hotkeys(
-  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+s,ctrl+r,esc',
+  'ctrl+t,ctrl+1,ctrl+2,ctrl+3,ctrl+4,ctrl+5,ctrl+shift+1,ctrl+shift+2,ctrl+shift+3,ctrl+shift+4,ctrl+s,ctrl+r,ctrl+e,ctrl+shift+r,esc',
   (event, handler) => {
     switch (handler.key) {
       case 'ctrl+t':
@@ -398,8 +497,16 @@ hotkeys(
       case 'ctrl+r':
         instance.loadIndex()
         break
+      case 'ctrl+e':
+        instance.exportTo()
+        break
+      case 'ctrl+shift+r':
+        instance.wantToEditRoot()
+        break
       case 'esc':
         instance.back()
+        instance.cancelEditRoot()
+        instance.cancelAddTag()
       default:
         console.info('no hot key')
     }

@@ -3,8 +3,8 @@ import { h } from 'hyperapp'
 import locals from '../styles/ICON.sass'
 
 const STYLE_ICON_SIZE = {
-  width: '22px',
-  height: '22px'
+  width: '14px',
+  height: '14px'
 }
 
 export default ({ iconName, size = STYLE_ICON_SIZE }) => (

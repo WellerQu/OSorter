@@ -50,7 +50,8 @@ export default ({
   files = [],
   allTags = [],
   selectTagHandler,
-  selectFileHandler
+  selectFileHandler,
+  exportToHandler
 }) => (
   <div class={locals.explorer}>
     <div class={locals.tags}>
@@ -62,7 +63,7 @@ export default ({
       />
     </div>
     <div class={locals.toolbar}>
-      <button>
+      <button onclick={() => exportToHandler()}>
         <ICON iconName="export" size={{ width: '12px', height: '12px' }} />
         导出到剪切板
       </button>

@@ -6,12 +6,35 @@
   box-sizing: border-box
   padding: 30px 20px
 
+.path
+  font-size: 12px
+  color: #9B9B9B
+  padding: 5px 0
+  display: flex
+  align-items: center
+  flex-flow: row nowrap
+  > div
+    width: 240px-36
+    overflow: hidden
+    text-overflow: ellipsis
+  button
+    $bgColor: #3F3F3F
+    margin-left: 10px
+    border-radius: 5px
+    background: $bgColor
+    outline: none
+    border: none
+    &:hover
+      background: lighten($bgColor, 10%)
+    &:active
+      background: darken($bgColor, 10%)
+
 .stars
   flex: 0 0 26px
   margin: 20px 0 0
 
 .tags
-  flex: 0 0 206px
+  flex: 0 0 170px
   margin: 20px 0 0
   overflow: auto
 
