@@ -1,9 +1,11 @@
 const electron = require('electron')
+const ipcMain = electron.ipcMain
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
+const fs = require('fs')
 const path = require('path')
 const url = require('url')
 
@@ -11,15 +13,24 @@ const url = require('url')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-function createWindow () {
+function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 960, height: 700, minWidth: 960, minHeight: 700, backgroundColor: '#3F3F3F', show: false})
+  mainWindow = new BrowserWindow({
+    width: 960,
+    height: 700,
+    minWidth: 960,
+    minHeight: 700,
+    backgroundColor: '#3F3F3F',
+    show: false
+  })
   // and load the index.html of the app.
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true
-  }))
+  mainWindow.loadURL(
+    url.format({
+      pathname: path.join(__dirname, 'index.html'),
+      protocol: 'file:',
+      slashes: true
+    })
+  )
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -28,7 +39,7 @@ function createWindow () {
   })
 
   // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
+  mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
@@ -42,7 +53,7 @@ function createWindow () {
 app.on('ready', createWindow)
 
 // Quit when all windows are closed.
-app.on('window-all-closed', function () {
+app.on('window-all-closed', function() {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -50,7 +61,7 @@ app.on('window-all-closed', function () {
   }
 })
 
-app.on('activate', function () {
+app.on('activate', function() {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
@@ -60,3 +71,23 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+const configPath = path.join(app.getPath('home'), '.OSORTER')
+
+ipcMain.on('save-last-root', (event, lastRootPath) => {
+  try {
+    fs.writeFileSync(configPath, lastRootPath)
+    event.returnValue = true
+  } catch (e) {
+    /* handle error */
+    event.returnValue = false
+  }
+})
+
+ipcMain.on('load-last-root', event => {
+  try {
+    event.returnValue = fs.readFileSync(configPath).toString()
+  } catch (e) {
+    /* handle error */
+    event.returnValue = null
+  }
+})

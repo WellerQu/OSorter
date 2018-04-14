@@ -64,6 +64,10 @@ const actions = {
     try {
       const fs = require('fs')
       const path = require('path')
+      const { ipcRenderer } = require('electron')
+
+      const lastRootPath = ipcRenderer.sendSync('load-last-root')
+      state.fileTreeRoot.rawPath = lastRootPath || state.fileTreeRoot.rawPath
 
       loadDir(state.fileTreeRoot, fs, path)
 
@@ -101,9 +105,13 @@ const actions = {
     try {
       const fs = require('fs')
       const path = require('path')
+      const { ipcRenderer } = require('electron')
 
       saveTag(state.allTags, state.fileTreeRoot, fs, path)
       saveDir(state.fileTreeRoot, fs, path)
+
+      if (!ipcRenderer.sendSync('save-last-root', state.fileTreeRoot.rawPath))
+        throw new Error('save config failed')
 
       state.message = 'saved success'
     } catch (e) {
@@ -145,12 +153,15 @@ const actions = {
     return { ...state }
   },
   expandNode: node => ((node.isExpand = !node.isExpand), node),
-  rate: loves => state => {
+  rate: loves => (state, actions) => {
     if (state.currentNode) state.currentNode.stars = loves
+
+    actions.saveIndex()
+
     return { ...state }
   },
   addTag: () => state => ((state.isAddingTag = true), { ...state }),
-  selectTag: index => state => {
+  selectTag: index => (state, actions) => {
     if (!state.currentNode) return
 
     const tag = state.allTags[index]
@@ -172,6 +183,8 @@ const actions = {
       tagged.push(state.currentNode)
     }
 
+    actions.saveIndex()
+
     return { ...state }
   },
   searchByTags: index => state => {
@@ -192,7 +205,11 @@ const actions = {
         state.searchTags.reduce((files, tag) => {
           const element = state.fileIndex.get(tag.name) || []
           element.forEach(f => {
-            if (!files.has(f) && state.showFiles.find(n => n.rawPath === f.rawPath)) files.add(f)
+            if (
+              !files.has(f) &&
+              state.showFiles.find(n => n.rawPath === f.rawPath)
+            )
+              files.add(f)
           })
           return files
         }, new Set())
@@ -201,7 +218,7 @@ const actions = {
 
     return { ...state }
   },
-  saveTag: tag => state => {
+  saveTag: tag => (state, actions) => {
     state.isAddingTag = false
 
     if (!tag.name) return { ...state }
@@ -215,6 +232,8 @@ const actions = {
     else state.currentNode.tags = [tag]
 
     state.fileIndex.set(tag.name, [state.currentNode])
+
+    actions.saveIndex()
 
     return { ...state }
   },
@@ -275,6 +294,7 @@ const actions = {
     state.fileTreeRoot.rawPath = path
 
     actions.loadIndex()
+    actions.saveIndex()
 
     return { ...state }
   },
