@@ -9,7 +9,10 @@
     "build": "webpack --mode production --progress --config ./build/webpack.config.js --env.prod",
     "build:dev": "webpack --mode development --progress --config ./build/webpack.config.js",
     "start:dev": "npm run build:dev && npm run elec",
-    "elec": "cp index.js dist/index.js && electron dist/index.js"
+    "elec": "cp index.js dist/index.js && electron dist/index.js",
+    "pack-win32": "electron-packager ./dist OSorter --out ./bin --electron-version=1.8.4 --asar --overwrite --platform=win32",
+    "pack-darwin": "electron-packager ./dist OSorter --out ./bin --electron-version=1.8.4 --asar --overwrite --platform=darwin",
+    "pack-all": "npm run pack-win32 || npm run pack-darwin"
   },
   "keywords": [
     "osorter",
