@@ -41,7 +41,7 @@ const state = {
   allTags: [],
   fileTreeRoot: {
     name: '/',
-    rawPath: '~/Movies',
+    rawPath: null,
     isExpand: true,
     type: FILE_TYPE.ROOT,
     children: []
@@ -66,8 +66,14 @@ const actions = {
       const path = require('path')
       const { ipcRenderer } = require('electron')
 
-      const lastRootPath = ipcRenderer.sendSync('load-last-root')
-      state.fileTreeRoot.rawPath = lastRootPath || state.fileTreeRoot.rawPath
+      if (!state.fileTreeRoot.rawPath) {
+        const lastRootPath = ipcRenderer.sendSync('load-last-root')
+        state.fileTreeRoot.rawPath = lastRootPath
+      }
+
+      if (!state.fileTreeRoot.rawPath) {
+        return { ...state }
+      }
 
       loadDir(state.fileTreeRoot, fs, path)
 
@@ -280,9 +286,10 @@ const actions = {
 
       if (dirs && dirs.length > 0) {
         actions.saveRoot(dirs[0])
+        state.message = 'set root success'
+      } else {
+        state.message = 'cancel set root'
       }
-
-      state.message = 'set root success'
     } catch (e) {
       /* handle error */
       state.message = e.message
