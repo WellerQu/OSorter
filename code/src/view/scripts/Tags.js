@@ -1,5 +1,6 @@
 import { h } from 'hyperapp'
 
+import createTag from '../../model/createTag'
 import ICON from './ICON'
 
 import locals from '../styles/Tags.sass'
@@ -23,7 +24,7 @@ const onUpdate = isAddingTag => element => {
 }
 const onKeyUp = handler => event => {
   if (event.keyCode === 13)
-    return handler({ name: event.target.value, color: '#0880f1' })
+    return handler(createTag(event.target.value, '#0880F1'))
 }
 
 export const TAGS_MODE = {

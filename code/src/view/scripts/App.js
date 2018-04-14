@@ -10,7 +10,10 @@ import FileExplorer from './FileExplorer'
 import { FILE_TYPE } from '../../constants'
 import { walkTree } from './utils'
 
-import loadTag from '../../controller/loadTag'
+import saveDir from '../../controller/saveDir'
+import saveTag from '../../controller/saveTag'
+import loadLastDataTags from '../../controller/loadLastDataTags'
+import loadLastDataFiles from '../../controller/loadLastDataFiles'
 import loadDir from '../../controller/loadDir'
 
 import locals from '../styles/App.sass'
@@ -55,74 +58,58 @@ const state = {
 
 const actions = {
   loadIndex: () => (state, actions) => {
-    new Promise((resolve, reject) => {
-      state.message = 'loading index file'
-      state.showFiles.length = 0
-      state.allTags.length = 0
+    state.showFiles.length = 0
+    state.allTags.length = 0
+
+    try {
       const fs = require('fs')
       const path = require('path')
-      try {
-        loadDir(state.fileTreeRoot, fs, path)
-        loadTag(state.allTags, state.fileTreeRoot.rawPath, fs, path)
-        resolve()
-      } catch (e) {
-        /* handle error */
-        reject(e)
-      }
-    })
-      .then(() => {
-        // 读取节点后
-        actions.selectNode(state.fileTreeRoot)
 
-        // 建立文件索引
-        state.fileIndex = state.allTags.reduce((map, n) => {
-          return map.set(n.name, [])
-        }, new Map())
+      loadDir(state.fileTreeRoot, fs, path)
 
-        let tagged
-        walkTree(state.fileTreeRoot, n => {
-          if (!n.tags) return true
+      loadLastDataTags(state.allTags, state.fileTreeRoot, fs, path)
+      loadLastDataFiles(state.fileTreeRoot, fs, path)
 
-          if (n.type === FILE_TYPE.VIDEO || FILE_TYPE.IMAGE) {
-            n.tags.forEach(t => {
-              tagged = state.fileIndex.get(t.name)
-              tagged.push(n)
-            })
-          }
-        })
+      // 读取节点后
+      actions.selectNode(state.fileTreeRoot)
+      // 建立文件索引
+      state.fileIndex = state.allTags.reduce((map, n) => {
+        return map.set(n.name, [])
+      }, new Map())
 
-        state.message = 'loaded success'
-        actions.echo({ ...state })
+      let tagged
+      walkTree(state.fileTreeRoot, n => {
+        if (!n.tags) return true
+
+        if (n.type === FILE_TYPE.VIDEO || FILE_TYPE.IMAGE) {
+          n.tags.forEach(t => {
+            tagged = state.fileIndex.get(t.name)
+            tagged.push(n)
+          })
+        }
       })
-      .catch(err => {
-        state.message = err.message || err
-        actions.echo({ ...state })
-      })
+
+      state.message = 'loaded success'
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
 
     return { ...state }
   },
   saveIndex: () => (state, actions) => {
-    new Promise((resolve, reject) => {
-      state.message = 'saving index file, waiting...'
-
-      const content = JSON.stringify(state.allTags)
+    try {
       const fs = require('fs')
       const path = require('path')
-      const dataTagPath = path.join(state.fileTreeRoot.rawPath, '.DATA_TAGS')
 
-      fs.writeFile(dataTagPath, content, err => {
-        if (err) return reject(err)
-        resolve()
-      })
-    })
-      .then(() => {
-        state.message = 'saved success'
-        actions.echo({ ...state })
-      })
-      .catch(err => {
-        state.message = err.message || err
-        actions.echo({ ...state })
-      })
+      saveTag(state.allTags, state.fileTreeRoot, fs, path)
+      saveDir(state.fileTreeRoot, fs, path)
+
+      state.message = 'saved success'
+    } catch (e) {
+      /* handle error */
+      state.message = e.message
+    }
 
     return { ...state }
   },
@@ -152,6 +139,7 @@ const actions = {
           files.push(n)
       })
       state.showFiles = files
+      state.searchTags.length = 0
     }
 
     return { ...state }
@@ -192,19 +180,19 @@ const actions = {
       state.searchTags = state.searchTags.filter(n => n.name !== tag.name)
     else state.searchTags.push(tag)
 
-    if (state.searchTags.length === 0) {
-      const files = []
-      walkTree(state.currentNode, n => {
-        if (n.type === FILE_TYPE.VIDEO || n.type === FILE_TYPE.IMAGE)
-          files.push(n)
-      })
-      state.showFiles = files
-    } else {
+    const files = []
+    walkTree(state.currentNode, n => {
+      if (n.type === FILE_TYPE.VIDEO || n.type === FILE_TYPE.IMAGE)
+        files.push(n)
+    })
+    state.showFiles = files
+
+    if (state.searchTags.length > 0) {
       state.showFiles = Array.from(
         state.searchTags.reduce((files, tag) => {
           const element = state.fileIndex.get(tag.name) || []
           element.forEach(f => {
-            if (!files.has(f)) files.add(f)
+            if (!files.has(f) && state.showFiles.find(n => n.rawPath === f.rawPath)) files.add(f)
           })
           return files
         }, new Set())
