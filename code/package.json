@@ -4,12 +4,12 @@
   "description": "manage our resources",
   "author": "xiaoyao.ning@gmail.com",
   "scripts": {
-    "asar": "cp main.js dist/main.js && asar pack ./dist ./dist/electron.asar",
+    "asar": "cp index.js dist/index.js && asar pack ./dist ./dist/app.asar",
     "dev": "webpack-dev-server --mode development --progress --hot --hotOnly --config ./build/webpack.config.js",
     "build": "webpack --mode production --progress --config ./build/webpack.config.js --env.prod",
     "build:dev": "webpack --mode development --progress --config ./build/webpack.config.js",
     "start:dev": "npm run build:dev && npm run elec",
-    "elec": "cp main.js dist/main.js && electron dist/main.js"
+    "elec": "cp index.js dist/index.js && electron dist/index.js"
   },
   "keywords": [
     "osorter",
